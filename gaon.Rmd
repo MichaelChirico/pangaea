@@ -1,0 +1,38 @@
+---
+title: "Demo: Gaon"
+output: 
+  rmarkdown::html_document
+---
+
+
+```{r setup, include = FALSE}
+#pull gaon digital chart
+library(rvest)
+library(data.table)
+#MichaelChirico/funchir
+library(funchir)
+```
+
+```{r scrape, results = 'hide'}
+URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
+tbl.css = '#wrap > div.chart > table'
+
+chart = read_html(URL) %>% html_node(tbl.css) %>%
+  html_table %>% setDT(check.names = TRUE)
+
+#beneath ranking header, two cells: rank & change (delete latter)
+#  beneat title/artist, album cover & track info (delete former)
+#  no (?) useful info in producitn/share/play fields
+chart[ , c('Ranking.1', 'Title...Artist', 'Production',
+           'Share', 'Play') := NULL]
+
+setnames(chart, c('rank', 'title_artist'))
+chart[ , c('title', 'artist', 'release') := 
+         tstrsplit(title_artist, split = "[\r\n\t|]+")]
+chart[ , title_artist := NULL]
+```
+
+```{r print}
+print(chart[ , !"rank"], nrows = 10)
+```
+
