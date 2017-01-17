@@ -10,8 +10,11 @@ URLs = list(Anglosphere = list(),
             `South Asia` = list(),
             `Africa & Middle East` =
               list(country = 'Nigeria'),
-            `Caribbean & Latin America` = list())
+            `Caribbean & Latin America` =
+              list(country = 'Mexico'))
             
+trim_white = function(x) gsub("^\\s+|\\s+$", "", x)
+
 get_chart = function(country)
   switch(country,
          'S. Korea' = get_korea,
@@ -84,9 +87,17 @@ get_nigeria = function(...) {
   title = top_50 %>% html_nodes('strong') %>% html_text
   artist = top_50 %>% html_nodes('h5') %>% html_text
   #picked up some empty strings & trim whitespace
-  artist = gsub("^\\s+|\\s+$", "", artist[artist != ""])
+  artist = trim_white(artist[artist != ""])
   if (length(artist) != length(title))
     message("Mismatched title/artist pull")
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
+get_mexico = function(...) {
+  URL = 'http://www.billboard.com/charts/regional-mexican-songs'
+  page = read_html(URL) 
+  title = page %>% html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% html_text
+  artist = page %>% html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
+  artist = trim_white(artist)
+  data.table(rank = seq_len(length(title)), title, artist)
+}
