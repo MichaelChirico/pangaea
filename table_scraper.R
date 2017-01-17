@@ -5,7 +5,7 @@ library(data.table)
 
 URLs = list(Anglosphere = list(),
             Europe = 
-              list(country = 'Portugal'),
+              list(country = c('Portugal', 'Spain', 'Netherlands')),
             `East Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `South Asia` = list(),
@@ -23,7 +23,9 @@ get_chart = function(country)
          'India' = get_india,
          'Nigeria' = get_nigeria,
          'Mexico' = get_mexico,
-         'Portugal' = get_portugal)()
+         'Portugal' = get_portugal,
+         'Spain' = get_spain,
+         'Netherlands' = get_netherlands)()
 
 get_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
@@ -121,4 +123,32 @@ get_portugal = function(...) {
   top_50[ , artist := trim_white(gsub("\n", "", artist))]
   top_50[ , artist := gsub("(.*),\\s(THE)", "\\2 \\1", artist)][]
   top_50[ , title := trim_white(gsub("\n", "", title))][]
+}
+
+#Pain in the ass due to abbreviated song/artist names...
+#  see: http://stackoverflow.com/questions/41708685
+# get_spain = function(...) {
+#   URL = 'http://www.elportaldemusica.es/canciones.php'
+#   x = read_html(URL)
+#   x %>% html_nodes(xpath = '//td[@class="nombreArtista"]') %>% 
+#     html_text %>% 
+#     html_attr("title")
+# }
+
+get_netherlands = function(...) {
+  URL = 'http://www.ultratop.be/nl/ultratop50'
+  page = read_html(URL)
+  core.xp = '//table[@id="chartList"]//td/a/'
+  #core structure is:
+  # <a><b>Artist</b><br>Title</a>
+  artist = page %>% 
+    html_nodes(xpath = paste0(core.xp, 'b')) %>% html_text
+  title = page %>% 
+    #not sure why text() here doesn't capture the <b> text too...
+    html_nodes(xpath = paste0(core.xp, 'text()')) %>% 
+    #captured a bunch of blanks, exclude here
+    html_text %>% grep('[^ ]', ., value = TRUE)
+  if (length(artist) != length(title))
+    message("Artist/title length mismatch")
+  data.table(rank = seq_len(length(title)), title, artist)
 }
