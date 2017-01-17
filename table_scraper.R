@@ -8,14 +8,16 @@ URLs = list(Anglosphere = list(),
             `East Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `South Asia` = list(),
-            `Africa & Middle East` = list(),
+            `Africa & Middle East` =
+              list(country = 'Nigeria'),
             `Caribbean & Latin America` = list())
             
 get_chart = function(country)
   switch(country,
          'S. Korea' = get_korea,
          'Japan' = get_japan,
-         'India' = get_india)()
+         'India' = get_india,
+         'Nigeria' = get_nigeria)()
 
 get_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
@@ -75,3 +77,16 @@ get_india = function(...) {
     strsplit(split = "\n") %>% sapply(., `[`, 2L) %>% gsub("^\\s+", "", .)
   data.table(rank = seq_len(length(title)), title, artist)
 }
+
+get_nigeria = function(...) {
+  URL = 'http://africacharts.com/official-top-50-songs-nigeria/'
+  top_50 = read_html(URL) %>% html_nodes(xpath = '//td[@class="column-3"]')
+  title = top_50 %>% html_nodes('strong') %>% html_text
+  artist = top_50 %>% html_nodes('h5') %>% html_text
+  #picked up some empty strings & trim whitespace
+  artist = gsub("^\\s+|\\s+$", "", artist[artist != ""])
+  if (length(artist) != length(title))
+    message("Mismatched title/artist pull")
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
