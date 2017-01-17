@@ -4,7 +4,8 @@ library(rvest)
 library(data.table)
 
 URLs = list(Anglosphere = list(),
-            Europe = list(),
+            Europe = 
+              list(country = 'Portugal'),
             `East Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `South Asia` = list(),
@@ -20,7 +21,9 @@ get_chart = function(country)
          'S. Korea' = get_korea,
          'Japan' = get_japan,
          'India' = get_india,
-         'Nigeria' = get_nigeria)()
+         'Nigeria' = get_nigeria,
+         'Mexico' = get_mexico,
+         'Portugal' = get_portugal)()
 
 get_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
@@ -96,8 +99,26 @@ get_nigeria = function(...) {
 get_mexico = function(...) {
   URL = 'http://www.billboard.com/charts/regional-mexican-songs'
   page = read_html(URL) 
-  title = page %>% html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% html_text
-  artist = page %>% html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
+  title = page %>%
+    html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% html_text
+  artist = page %>% 
+    html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
   artist = trim_white(artist)
   data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_portugal = function(...) {
+  URL = 'http://euro200.net/Portugal-Top50.htm'
+  #ragged table
+  top_50 = read_html(URL) %>% 
+    html_nodes('table') %>% html_table(fill = TRUE) %>% `[[`(1L)
+  #exclude irrelevant header/footer rows
+  top_50 = setDT(top_50)[-c(1L:grep('this week', X2),
+                            (grep('25', X2) + 1L):.N)]
+  top_50 = rbind(top_50[ , .(title_artist = X5)],
+                 top_50[ , .(title_artist = X11)])
+  top_50[ , c("artist", "title") := tstrsplit(title_artist, split = "\\s-\\s")]
+  top_50[ , artist := trim_white(gsub("\n", "", artist))]
+  top_50[ , artist := gsub("(.*),\\s(THE)", "\\2 \\1", artist)][]
+  top_50[ , title := trim_white(gsub("\n", "", title))][]
 }
