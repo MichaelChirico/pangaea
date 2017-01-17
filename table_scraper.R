@@ -6,7 +6,7 @@ library(data.table)
 URLs = list(Anglosphere = list(),
             Europe = list(),
             `East Asia & Islands` = 
-              list(country = c('S. Korea', 'Japan')),
+              list(country = c('S. Korea', 'Japan', 'India')),
             `South Asia` = list(),
             `Africa & Middle East` = list(),
             `Caribbean & Latin America` = list())
@@ -14,7 +14,8 @@ URLs = list(Anglosphere = list(),
 get_chart = function(country)
   switch(country,
          'S. Korea' = get_korea,
-         'Japan' = get_japan)()
+         'Japan' = get_japan,
+         'India' = get_india)()
 
 get_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
@@ -63,4 +64,14 @@ get_japan = function(...) {
   }))
 }
 
-
+get_india = function(...) {
+  URL = 'http://www.radiomirchi.com/more/mirchi-top-20/'
+  top_20 = read_html(URL) %>% 
+    html_nodes(xpath = '//article[@class="top01"]')
+  title = top_20 %>% html_nodes('h2') %>% html_text
+  artist = top_20 %>% html_nodes('h3') %>% html_text %>% 
+    #First line appears to be the movie title?
+    # then second line starts with white space
+    strsplit(split = "\n") %>% sapply(., `[`, 2L) %>% gsub("^\\s+", "", .)
+  data.table(rank = seq_len(length(title)), title, artist)
+}
