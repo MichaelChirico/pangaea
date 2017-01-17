@@ -5,7 +5,8 @@ library(data.table)
 
 URLs = list(Anglosphere = list(),
             Europe = 
-              list(country = c('Portugal', 'Spain', 'Netherlands')),
+              list(country = c('Portugal', 'Spain', 'Belgium',
+                               'France')),
             `East Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `South Asia` = list(),
@@ -25,7 +26,8 @@ get_chart = function(country)
          'Mexico' = get_mexico,
          'Portugal' = get_portugal,
          'Spain' = get_spain,
-         'Netherlands' = get_netherlands)()
+         'Belgium' = get_belgium,
+         'France' = get_france)()
 
 get_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
@@ -135,7 +137,7 @@ get_portugal = function(...) {
 #     html_attr("title")
 # }
 
-get_netherlands = function(...) {
+get_belgium = function(...) {
   URL = 'http://www.ultratop.be/nl/ultratop50'
   page = read_html(URL)
   core.xp = '//table[@id="chartList"]//td/a/'
@@ -150,5 +152,15 @@ get_netherlands = function(...) {
     html_text %>% grep('[^ ]', ., value = TRUE)
   if (length(artist) != length(title))
     message("Artist/title length mismatch")
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_france = function(...) {
+  URL = 'http://www.snepmusique.com/tops-semaine/top-singles-streaming/'
+  page = read_html(URL) %>% html_nodes(xpath = '//td[@class="atl"]')
+  title = page %>% 
+    html_nodes(xpath = '//p[@class="title"]') %>% html_text
+  artist = page %>%
+    html_nodes(xpath = '//strong[@class="artist"]') %>% html_text
   data.table(rank = seq_len(length(title)), title, artist)
 }
