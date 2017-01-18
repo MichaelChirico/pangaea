@@ -7,9 +7,8 @@ URLs = list(Anglosphere = list(),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands')),
-            `East Asia & Islands` = 
+            `East/South Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
-            `South Asia` = list(),
             `Africa & Middle East` =
               list(country = 'Nigeria'),
             `Caribbean & Latin America` =
@@ -30,6 +29,7 @@ get_chart = function(country)
          'France' = get_france,
          'Netherlands' = get_netherlands)()
 
+# East/South Asia & Islands ####
 get_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
   tbl.css = '#wrap > div.chart > table'
@@ -89,6 +89,7 @@ get_india = function(...) {
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
+# Africa & Middle East ####
 get_nigeria = function(...) {
   URL = 'http://africacharts.com/official-top-50-songs-nigeria/'
   top_50 = read_html(URL) %>% html_nodes(xpath = '//td[@class="column-3"]')
@@ -101,6 +102,7 @@ get_nigeria = function(...) {
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
+# Caribbean & Latin America ####
 get_mexico = function(...) {
   URL = 'http://www.billboard.com/charts/regional-mexican-songs'
   page = read_html(URL) 
@@ -112,6 +114,7 @@ get_mexico = function(...) {
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
+# Europe ####
 get_portugal = function(...) {
   URL = 'http://euro200.net/Portugal-Top50.htm'
   #ragged table
@@ -128,15 +131,21 @@ get_portugal = function(...) {
   top_50[ , title := trim_white(gsub("\n", "", title))][]
 }
 
-#Pain in the ass due to abbreviated song/artist names...
-#  see: http://stackoverflow.com/questions/41708685
-# get_spain = function(...) {
-#   URL = 'http://www.elportaldemusica.es/canciones.php'
-#   x = read_html(URL)
-#   x %>% html_nodes(xpath = '//td[@class="nombreArtista"]') %>% 
-#     html_text %>% 
-#     html_attr("title")
-# }
+get_spain = function(...) {
+  URL = 'http://www.elportaldemusica.es/canciones.php'
+  page = read_html(URL) 
+  #credit to mnel for helping construct this xpath
+  #  http://stackoverflow.com/a/41709268/3576984
+  title.td = '//td[@class="nombreContenido_inferior"]'
+  title.xp = paste0(title.td, '//span/@title|', title.td, '[not(.//span)]')
+  title = page %>% 
+    html_nodes(xpath = title.xp) %>% html_text() %>% trim_white
+  artist.td = '//td[@class="nombreArtista"]'
+  artist.xp = paste0(artist.td, '//span/@title|', artist.td, '[not(.//span)]')
+  artist = page %>% 
+    html_nodes(xpath = artist.xp) %>% html_text() %>% trim_white
+  data.table(rank = seq_len(length(title)), title, artist)
+}
 
 get_belgium = function(...) {
   URL = 'http://www.ultratop.be/nl/ultratop50'
