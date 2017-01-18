@@ -3,19 +3,20 @@
 library(rvest)
 library(data.table)
 
+trim_white = function(x) gsub("^\\s+|\\s+$", "", x)
+
 URLs = list(Anglosphere = list(),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands',
-                               'Germany', 'Switzerland')),
+                               'Germany', 'Switzerland',
+                               'Italy', 'Denmark')),
             `East/South Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `Africa & Middle East` =
               list(country = 'Nigeria'),
             `Caribbean & Latin America` =
               list(country = 'Mexico'))
-            
-trim_white = function(x) gsub("^\\s+|\\s+$", "", x)
 
 get_chart = function(country)
   switch(country,
@@ -30,7 +31,9 @@ get_chart = function(country)
          'France' = get_france,
          'Netherlands' = get_netherlands,
          'Germany' = get_germany,
-         'Switzerland' = get_switzerland)()
+         'Switzerland' = get_switzerland,
+         'Italy' = get_italy,
+         'Denmark' = get_denmark)()
 
 # East/South Asia & Islands ####
 get_korea = function(...) {
@@ -226,5 +229,23 @@ get_switzerland = function(...) {
     html_text %>% grep('[^ ]', ., value = TRUE)
   if (length(artist) != length(title))
     message("Artist/title length mismatch")
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_italy = function(...) {
+#   URL = 'http://www.fimi.it/classifiche#/category:digital/'
+#   page = read_html(URL) %>% html_nodes(xpath = '//td[@class="chart-titolo"]')
+#   title = tbl %>% html_nodes(xpath = '//div[@class="title"]') %>% html_text
+#   artist = tbl %>% html_nodes(xpath = '//div[@class="subtitle"]') %>% html_text
+# }
+
+get_denmark = function(...) { 
+  URL = 'http://hitlisten.nu/default.asp?list=t40'
+  page = read_html(URL)
+  title = page %>% html_nodes(xpath = '//div[@id="titel"]') %>%
+    html_text %>% trim_white
+  artist = page %>% html_nodes(xpath = '//div[@id="artistnavn"]') %>%
+    html_text %>% trim_white
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
