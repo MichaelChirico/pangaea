@@ -5,13 +5,14 @@ library(data.table)
 
 trim_white = function(x) gsub("^\\s+|\\s+$", "", x)
 
-URLs = list(Anglosphere = list(),
+URLs = list(Anglosphere = 
+              list(country = c('USA')),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands',
                                'Germany', 'Switzerland',
                                'Italy', 'Denmark', 'Norway',
-                               'Sweden', 'Finland')),
+                               'Sweden', 'Finland', 'Russia')),
             `East/South Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -37,7 +38,9 @@ get_chart = function(country)
          'Denmark' = get_denmark,
          'Norway' = get_norway,
          'Sweden' = get_sweden,
-         'Finland' = get_finland)()
+         'Finland' = get_finland,
+         'Russia' = get_russia,
+         'USA' = get_usa)()
 
 # East/South Asia & Islands ####
 get_korea = function(...) {
@@ -285,4 +288,23 @@ get_finland = function(...) {
   artist = track_column %>% 
     html_nodes(xpath = '//a[@class="artist"]') %>% html_text()
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_russia = function(...) {
+#   URL = 'https://www.tophit.ru/en/chart/common/week'
+#   tbl = read_html(URL) %>% html_node(xpath = '//td')
+# }
+
+# Anglosphere ####
+get_usa = function(...) {
+  #identical to Mexico
+  URL = 'http://www.billboard.com/charts/hot-100'
+  page = read_html(URL) 
+  title = page %>%
+    html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% html_text
+  artist = page %>% 
+    html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
+  artist = trim_white(artist)
+  data.table(rank = seq_len(length(title)), title, artist)
 }
