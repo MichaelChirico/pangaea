@@ -6,7 +6,7 @@ library(data.table)
 URLs = list(Anglosphere = list(),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
-                               'France')),
+                               'France', 'Netherlands')),
             `East Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `South Asia` = list(),
@@ -27,7 +27,8 @@ get_chart = function(country)
          'Portugal' = get_portugal,
          'Spain' = get_spain,
          'Belgium' = get_belgium,
-         'France' = get_france)()
+         'France' = get_france,
+         'Netherlands' = get_netherlands)()
 
 get_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
@@ -157,10 +158,27 @@ get_belgium = function(...) {
 
 get_france = function(...) {
   URL = 'http://www.snepmusique.com/tops-semaine/top-singles-streaming/'
-  page = read_html(URL) %>% html_nodes(xpath = '//td[@class="atl"]')
-  title = page %>% 
+  track_column = read_html(URL) %>% 
+    html_nodes(xpath = '//td[@class="atl"]')
+  title = track_column %>% 
     html_nodes(xpath = '//p[@class="title"]') %>% html_text
-  artist = page %>%
+  artist = track_column %>%
     html_nodes(xpath = '//strong[@class="artist"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_netherlands = function(...) {
+  URL = 'https://www.top40.nl/top40'
+  #appears older songs still stored in the document?
+  #  under <li class="no-longer-listed"...>
+  this_week = read_html(URL) %>% 
+    html_nodes(xpath = '//li[@class!="no-longer-listed"]')
+  title = this_week %>% 
+    #completely obscure why //span[@class="title"] isn't sufficient --
+    #  somehow still picks up the things that should have
+    #  been clipped by li[@class!="no-longer-listed"]
+    html_nodes(xpath = 'div/div/a/span[@class="title"]') %>% html_text
+  artist = this_week %>% 
+    html_nodes(xpath = 'div/div/a/span[@class="credit"]') %>% html_text
   data.table(rank = seq_len(length(title)), title, artist)
 }
