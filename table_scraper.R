@@ -136,14 +136,18 @@ get_spain = function(...) {
   page = read_html(URL) 
   #credit to mnel for helping construct this xpath
   #  http://stackoverflow.com/a/41709268/3576984
-  title.td = '//td[@class="nombreContenido_inferior"]'
+  #need to prefix with div[@id..] because RHS
+  #  top-10 list also has this info.
+  title.td = '//div[@id="contLoUltimo"]//td[@class="nombreContenido_inferior"]'
   title.xp = paste0(title.td, '//span/@title|', title.td, '[not(.//span)]')
   title = page %>% 
-    html_nodes(xpath = title.xp) %>% html_text() %>% trim_white
-  artist.td = '//td[@class="nombreArtista"]'
+    html_nodes(xpath = title.xp) %>% html_text() %>% trim_white %>%
+    gsub("&amp;", "&", ., fixed = TRUE)
+  artist.td = '//div[@id="contLoUltimo"]//td[@class="nombreArtista"]'
   artist.xp = paste0(artist.td, '//span/@title|', artist.td, '[not(.//span)]')
   artist = page %>% 
-    html_nodes(xpath = artist.xp) %>% html_text() %>% trim_white
+    html_nodes(xpath = artist.xp) %>% html_text() %>% trim_white %>%
+    gsub("&amp;", "&", ., fixed = TRUE)
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
