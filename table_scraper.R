@@ -6,7 +6,8 @@ library(data.table)
 URLs = list(Anglosphere = list(),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
-                               'France', 'Netherlands')),
+                               'France', 'Netherlands',
+                               'Germany')),
             `East/South Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -27,7 +28,8 @@ get_chart = function(country)
          'Spain' = get_spain,
          'Belgium' = get_belgium,
          'France' = get_france,
-         'Netherlands' = get_netherlands)()
+         'Netherlands' = get_netherlands,
+         'Germany' = get_germany)()
 
 # East/South Asia & Islands ####
 get_korea = function(...) {
@@ -148,7 +150,7 @@ get_spain = function(...) {
   artist = page %>% 
     html_nodes(xpath = artist.xp) %>% html_text() %>% trim_white %>%
     gsub("&amp;", "&", ., fixed = TRUE)
-  data.table(rank = seq_len(length(title)), title, artist)
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
 get_belgium = function(...) {
@@ -166,7 +168,7 @@ get_belgium = function(...) {
     html_text %>% grep('[^ ]', ., value = TRUE)
   if (length(artist) != length(title))
     message("Artist/title length mismatch")
-  data.table(rank = seq_len(length(title)), title, artist)
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
 get_france = function(...) {
@@ -177,7 +179,7 @@ get_france = function(...) {
     html_nodes(xpath = '//p[@class="title"]') %>% html_text
   artist = track_column %>%
     html_nodes(xpath = '//strong[@class="artist"]') %>% html_text
-  data.table(rank = seq_len(length(title)), title, artist)
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
 get_netherlands = function(...) {
@@ -193,5 +195,16 @@ get_netherlands = function(...) {
     html_nodes(xpath = 'div/div/a/span[@class="title"]') %>% html_text
   artist = this_week %>% 
     html_nodes(xpath = 'div/div/a/span[@class="credit"]') %>% html_text
-  data.table(rank = seq_len(length(title)), title, artist)
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_germany = function(...) {
+  URL = 'https://www.offiziellecharts.de/charts'
+  track_column = read_html(URL) %>% 
+    html_nodes(xpath = '//td[@class="ch-info"]')
+  title = track_column %>% 
+    html_nodes(xpath = '//span[@class="info-title"]') %>% html_text
+  artist = track_column %>% 
+    html_nodes(xpath = '//span[@class="info-artist"]') %>% html_text
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
