@@ -10,7 +10,7 @@ URLs = list(Anglosphere = list(),
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands',
                                'Germany', 'Switzerland',
-                               'Italy', 'Denmark')),
+                               'Italy', 'Denmark', 'Norway')),
             `East/South Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -33,7 +33,8 @@ get_chart = function(country)
          'Germany' = get_germany,
          'Switzerland' = get_switzerland,
          'Italy' = get_italy,
-         'Denmark' = get_denmark)()
+         'Denmark' = get_denmark,
+         'Norway' = get_norway)()
 
 # East/South Asia & Islands ####
 get_korea = function(...) {
@@ -247,5 +248,13 @@ get_denmark = function(...) {
     html_text %>% trim_white
   artist = page %>% html_nodes(xpath = '//div[@id="artistnavn"]') %>%
     html_text %>% trim_white
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_norway = function(...) {
+  URL = 'http://lista.vg.no/'
+  page = read_html(URL) 
+  title = page %>% html_nodes(xpath = '//a[@class="album"]') %>% html_text
+  artist = page %>% html_nodes(xpath = '//a[@class="artist"]') %>% html_text
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
