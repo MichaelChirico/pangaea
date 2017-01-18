@@ -10,7 +10,8 @@ URLs = list(Anglosphere = list(),
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands',
                                'Germany', 'Switzerland',
-                               'Italy', 'Denmark', 'Norway')),
+                               'Italy', 'Denmark', 'Norway',
+                               'Sweden', 'Finland')),
             `East/South Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -34,7 +35,9 @@ get_chart = function(country)
          'Switzerland' = get_switzerland,
          'Italy' = get_italy,
          'Denmark' = get_denmark,
-         'Norway' = get_norway)()
+         'Norway' = get_norway,
+         'Sweden' = get_sweden,
+         'Finland' = get_finland)()
 
 # East/South Asia & Islands ####
 get_korea = function(...) {
@@ -256,5 +259,30 @@ get_norway = function(...) {
   page = read_html(URL) 
   title = page %>% html_nodes(xpath = '//a[@class="album"]') %>% html_text
   artist = page %>% html_nodes(xpath = '//a[@class="artist"]') %>% html_text
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_sweden = function(...) {
+#   URL = 'http://www.sverigetopplistan.se/'
+#   page = read_html(URL)
+#   title = page %>% html_nodes(xpath = '//span[@class="title"]') %>% html_text
+# }
+
+get_finland = function(...) {
+  #first, grab most recent week from directory page
+  site.stem = 'http://www.ifpi.fi'
+  this.year = year(Sys.Date())
+  dir.URL = paste0(site.stem, '/tilastot/virallinen-lista/singlet/')
+  dir.xp = paste0('//h3[text()="', this.year, 
+                  '"]/following-sibling::*/li[1]/a')
+  URL = read_html(dir.URL) %>% html_node(xpath = dir.xp) %>% 
+    html_attr("href") %>% paste0(site.stem, .)
+  track_column = read_html(URL) %>%
+    html_nodes(xpath = '//div[@class="album-info"]')
+  title = track_column %>% 
+    html_nodes(xpath = '//a[@class="title"]') %>% html_text()
+  artist = track_column %>% 
+    html_nodes(xpath = '//a[@class="artist"]') %>% html_text()
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
