@@ -61,7 +61,7 @@ get_south_korea = function(...) {
   chart[ , c('title', 'artist', 'release') := 
            tstrsplit(title_artist, split = "[\r\n\t|]+")]
   chart[ , title_artist := NULL]
-  chart
+  chart[]
 }
 
 get_japan = function(...) {
