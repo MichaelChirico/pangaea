@@ -6,7 +6,7 @@ library(data.table)
 trim_white = function(x) gsub("^\\s+|\\s+$", "", x)
 
 URLs = list(Anglosphere = 
-              list(country = c('USA')),
+              list(country = c('USA', 'Canada', 'UK')),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands',
@@ -40,7 +40,9 @@ get_chart = function(country)
          'Sweden' = get_sweden,
          'Finland' = get_finland,
          'Russia' = get_russia,
-         'USA' = get_usa)()
+         'USA' = get_usa,
+         'Canada' = get_canada,
+         'UK' = get_uk)()
 
 # East/South Asia & Islands ####
 get_korea = function(...) {
@@ -306,5 +308,30 @@ get_usa = function(...) {
   artist = page %>% 
     html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
   artist = trim_white(artist)
-  data.table(rank = seq_len(length(title)), title, artist)
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_canada = function(...) {
+  #identical to Mexico & USA
+  URL = 'http://www.billboard.com/charts/canadian-hot-100'
+  page = read_html(URL) 
+  title = page %>%
+    html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% html_text
+  artist = page %>% 
+    html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
+  artist = trim_white(artist)
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_uk = function(...) {
+  URL = 'http://www.officialcharts.com/charts/singles-chart/'
+  track_column = read_html(URL) %>%
+    html_nodes(xpath = '//div[@class="title-artist"]')
+  title = track_column %>% 
+    html_nodes(xpath = '//div[@class="title"]') %>% 
+    html_text %>% trim_white
+  artist = track_column %>% 
+    html_nodes(xpath = '//div[@class="artist"]') %>% 
+    html_text %>% trim_white
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
