@@ -7,7 +7,7 @@ URLs = list(Anglosphere = list(),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands',
-                               'Germany')),
+                               'Germany', 'Switzerland')),
             `East/South Asia & Islands` = 
               list(country = c('S. Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -29,7 +29,8 @@ get_chart = function(country)
          'Belgium' = get_belgium,
          'France' = get_france,
          'Netherlands' = get_netherlands,
-         'Germany' = get_germany)()
+         'Germany' = get_germany,
+         'Switzerland' = get_switzerland)()
 
 # East/South Asia & Islands ####
 get_korea = function(...) {
@@ -206,5 +207,24 @@ get_germany = function(...) {
     html_nodes(xpath = '//span[@class="info-title"]') %>% html_text
   artist = track_column %>% 
     html_nodes(xpath = '//span[@class="info-artist"]') %>% html_text
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_switzerland = function(...) {
+  #near identical to Belgium
+  URL = 'http://hitparade.ch/charts/singles'
+  page = read_html(URL)
+  core.xp = '//table[@class="table650"]//td/a/'
+  #core structure is:
+  # <a><b>Artist</b><br>Title</a>
+  artist = page %>% 
+    html_nodes(xpath = paste0(core.xp, 'b')) %>% html_text
+  title = page %>% 
+    #not sure why text() here doesn't capture the <b> text too...
+    html_nodes(xpath = paste0(core.xp, 'text()')) %>% 
+    #captured a bunch of blanks, exclude here
+    html_text %>% grep('[^ ]', ., value = TRUE)
+  if (length(artist) != length(title))
+    message("Artist/title length mismatch")
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
