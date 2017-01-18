@@ -6,7 +6,9 @@ library(data.table)
 trim_white = function(x) gsub("^\\s+|\\s+$", "", x)
 
 URLs = list(Anglosphere = 
-              list(country = c('USA', 'Canada', 'UK')),
+              list(country = c('USA', 'Canada', 'UK',
+                               'Ireland', 'Australia',
+                               'New Zealand')),
             Europe = 
               list(country = c('Portugal', 'Spain', 'Belgium',
                                'France', 'Netherlands',
@@ -14,7 +16,7 @@ URLs = list(Anglosphere =
                                'Italy', 'Denmark', 'Norway',
                                'Sweden', 'Finland', 'Russia')),
             `East/South Asia & Islands` = 
-              list(country = c('S. Korea', 'Japan', 'India')),
+              list(country = c('South Korea', 'Japan', 'India')),
             `Africa & Middle East` =
               list(country = 'Nigeria'),
             `Caribbean & Latin America` =
@@ -22,7 +24,7 @@ URLs = list(Anglosphere =
 
 get_chart = function(country)
   switch(country,
-         'S. Korea' = get_korea,
+         'South Korea' = get_south_korea,
          'Japan' = get_japan,
          'India' = get_india,
          'Nigeria' = get_nigeria,
@@ -42,10 +44,13 @@ get_chart = function(country)
          'Russia' = get_russia,
          'USA' = get_usa,
          'Canada' = get_canada,
-         'UK' = get_uk)()
+         'UK' = get_uk,
+         'Ireland' = get_ireland,
+         'Australia' = get_australia,
+         'New Zealand' = get_new_zealand)()
 
 # East/South Asia & Islands ####
-get_korea = function(...) {
+get_south_korea = function(...) {
   URL = 'http://gaonchart.co.kr/main/section/chart/online.gaon'
   tbl.css = '#wrap > div.chart > table'
   chart = read_html(URL) %>% html_node(tbl.css) %>%
@@ -333,5 +338,28 @@ get_uk = function(...) {
   artist = track_column %>% 
     html_nodes(xpath = '//div[@class="artist"]') %>% 
     html_text %>% trim_white
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_ireland = function(...) {
+#   URL = 'http://www.irma.ie/#chartTab1'
+#   page = read_html(URL) %>% html_nodes("table")
+# }
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_australia = function(...) {
+#   URL = 'http://www.ariacharts.com.au/charts/singles-chart'
+#   page = read_html(URL)
+#   title = page %>% html_nodes(xpath = '//div[@class="item-title"]') %>% html_text
+# }
+
+get_new_zealand = function(...) {
+  URL = 'http://nztop40.co.nz/'
+  page = read_html(URL)
+  title = page %>% 
+    html_nodes(xpath = '//article//*[@class="title"]') %>% html_text
+  artist = page %>% 
+    html_nodes(xpath = '//article//*[@class="artist"]') %>% html_text
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
