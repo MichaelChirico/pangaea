@@ -15,7 +15,7 @@ URLs = list(Anglosphere =
                                'Germany', 'Switzerland',
                                'Italy', 'Denmark', 'Norway',
                                'Sweden', 'Finland', 'Russia',
-                               'Poland')),
+                               'Poland', 'Belarus')),
             `East/South Asia & Islands` = 
               list(country = c('South Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -49,7 +49,8 @@ get_chart = function(country)
          'Ireland' = get_ireland,
          'Australia' = get_australia,
          'New Zealand' = get_new_zealand,
-         'Poland' = get_poland)()
+         'Poland' = get_poland,
+         'Belarus' = get_belarus)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -309,9 +310,26 @@ get_poland = function(...) {
   URL = 'http://bestsellery.zpav.pl/airplays/top.php'
   read_html(URL) %>%
     html_node(xpath = '//table[@class="airplaytable"]') %>%
+    #4th column is record label
     html_table %>% `[`( , -4L) %>% setDT %>% 
     setnames(c('rank', 'artist', 'title')) %>% 
     setcolorder(c(1L, 3L, 2L)) %>% return
+}
+
+get_belarus = function(...) {
+  URL = 'http://unistar.by/music/top20/'
+  #must prefix by table[@class...] because there's
+  #  a second table (of near-misses?) underneath with same div logic
+  table.xp = '//table[@class="music-top20"]//div[@class="txt-plist__info"]'
+  track.list = read_html(URL) %>% 
+    html_nodes(xpath = table.xp) %>% html_text %>%
+    #format is basically <div><span>ARTIST</span>TITLE</div>;
+    #  couldn't figure out how to get TITLE & exclude ARTIST,
+    #  so just getting them together and strsplitting them apart;
+    #  not water-tight, but seems to work
+    strsplit('[\t\n]') %>% lapply(function(x) x[nchar(x) > 0]) %>% 
+    transpose %>% setDF %>% setDT(keep.rownames = TRUE) %>%
+    setnames(c('rank', 'arist', 'title')) %>% return
 }
 
 # Anglosphere ####
