@@ -346,6 +346,19 @@ get_belarus = function(...) {
 
 get_austria = function(...) {
   URL = 'http://www.austriancharts.at/charts/singles'
+  track_column.xp = '//td[@style = "padding-top:6px;cursor:pointer;"]/a'
+  track_column = read_html(URL) %>% html_nodes(xpath = track_column.xp)
+  #structure: <td><a><b>Artist</b>Title</a></td>
+  #  so artist is easy, but need to exclude <b>
+  #  to get title
+  artist = track_column %>% html_nodes('b') %>% html_text
+  #see http://stackoverflow.com/a/7122258/3576984
+  title.xp = '//td/a/node()[not(self::b)]'
+  title = track_column %>% html_nodes(xpath = title.xp) %>% html_text
+  #some blank nodes were included somehow; delete now
+  title = title[nzchar(trim_white(title))]
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
 
 get_croatia = function(...) {
   URL = 'http://radio.hrt.hr/aod/arc-top-40/194069/'
