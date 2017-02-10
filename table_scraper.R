@@ -303,6 +303,21 @@ get_finland = function(...) {
 #   tbl = read_html(URL) %>% html_node(xpath = '//td')
 # }
 
+get_croatia = function(...) {
+  URL = 'http://radio.hrt.hr/aod/arc-top-40/194069/'
+  tbl = read_html(URL) %>% html_node('table') %>% html_table %>% setDT
+  head.idx = grep("^artist$", tbl$X2)
+  tbl = tbl[-seq_len(head.idx)]
+  #artist/title text is neighbored to some
+  #  extraneous info (websites, album titles);
+  #  rather than dealing with that (annoying),
+  #  just use regex to split the wheat from the chaff
+  tbl[ , X2 := gsub('^([^a-z]+)[a-z].*', '\\1', X2)]
+  tbl[ , X3 := gsub('^([^a-z]+)[a-z].*', '\\1', X3)]
+  setnames(tbl, c('rank', 'artist', 'title'))
+  setcolorder(tbl, c(1L, 3L, 2L))[]
+}
+
 # Anglosphere ####
 get_usa = function(...) {
   #identical to Mexico
