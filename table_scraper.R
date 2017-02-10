@@ -15,7 +15,8 @@ URLs = list(Anglosphere =
                                'Germany', 'Switzerland',
                                'Italy', 'Denmark', 'Norway',
                                'Sweden', 'Finland', 'Russia',
-                               'Poland', 'Belarus')),
+                               'Poland', 'Belarus', 'Ukraine',
+                               'Austria')),
             `East/South Asia & Islands` = 
               list(country = c('South Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -50,7 +51,9 @@ get_chart = function(country)
          'Australia' = get_australia,
          'New Zealand' = get_new_zealand,
          'Poland' = get_poland,
-         'Belarus' = get_belarus)()
+         'Belarus' = get_belarus,
+         'Ukraine' = get_ukraine,
+         'Austira' = get_austria)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -330,6 +333,17 @@ get_belarus = function(...) {
     strsplit('[\t\n]') %>% lapply(function(x) x[nchar(x) > 0]) %>% 
     transpose %>% setDF %>% setDT(keep.rownames = TRUE) %>%
     setnames(c('rank', 'arist', 'title')) %>% return
+}
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_ukraine = function(...) {
+#   URL = 'http://fdr.com.ua/charts.php'
+#   read_html(URL) %>% html_node(xpath = '//table[@id="teblechart"]') %>%
+#     html_table
+# }
+
+get_austria = function(...) {
+  URL = 'http://www.austriancharts.at/charts/singles'
 }
 
 # Anglosphere ####
