@@ -16,7 +16,9 @@ URLs = list(Anglosphere =
                                'Italy', 'Denmark', 'Norway',
                                'Sweden', 'Finland', 'Russia',
                                'Poland', 'Belarus', 'Ukraine',
-                               'Austria', 'Croatia', 'Greece')),
+                               'Austria', 'Croatia', 'Greece',
+                               'Czech Republic', 'Slovakia',
+                               'Hungary')),
             `East/South Asia & Islands` = 
               list(country = c('South Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -55,7 +57,10 @@ get_chart = function(country)
          'Ukraine' = get_ukraine,
          'Austira' = get_austria,
          'Croatia' = get_croatia,
-         'Greece' = get_greece)()
+         'Greece' = get_greece,
+         'Czech Republic' = get_czech_republic,
+         'Slovakia' = get_slovakia,
+         'Hungary' = get_hungary)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -383,6 +388,28 @@ get_greece = function(...) {
            c('rank', 'artist', 'title'))
   tbl[ , c('Company', 'Week-1', 'Status') := NULL]
   setcolorder(tbl, c(1L, 3L, 2L))[]
+}
+
+# both CR & Slovakia read_html fail
+# get_czech_republic = function(...) {
+#   URL = 'http://www.ifpicr.cz/hitparada/'
+# }
+# 
+# get_slovakia = function(...) {
+#   URL = 'http://www.ifpicr.cz/hitparada/'
+# }
+
+get_hungary = function(...) {
+  URL = 'http://zene.slagerlistak.hu/radios-top-40-jatszasi-lista'
+  track_column = read_html(URL) %>%
+    html_nodes(xpath = '//td[@class="lemez_sor"]')
+  artist = track_column %>% 
+    html_nodes(xpath = '//span[@class="eloado"]') %>% html_text
+  title.xp = '//td[@class="lemez_sor"]/node()[not(self::span)]'
+  title = track_column %>% html_nodes(xpath = title.xp) %>% 
+    html_text %>% trim_white
+  title = title[nzchar(title)]
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
 # Anglosphere ####
