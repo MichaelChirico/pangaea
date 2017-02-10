@@ -14,7 +14,8 @@ URLs = list(Anglosphere =
                                'France', 'Netherlands',
                                'Germany', 'Switzerland',
                                'Italy', 'Denmark', 'Norway',
-                               'Sweden', 'Finland', 'Russia')),
+                               'Sweden', 'Finland', 'Russia',
+                               'Croatia', 'Greece')),
             `East/South Asia & Islands` = 
               list(country = c('South Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -47,7 +48,9 @@ get_chart = function(country)
          'UK' = get_uk,
          'Ireland' = get_ireland,
          'Australia' = get_australia,
-         'New Zealand' = get_new_zealand)()
+         'New Zealand' = get_new_zealand,
+         'Croatia' = get_croatia,
+         'Greece' = get_greece)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -315,6 +318,16 @@ get_croatia = function(...) {
   tbl[ , X2 := gsub('^([^a-z]+)[a-z].*', '\\1', X2)]
   tbl[ , X3 := gsub('^([^a-z]+)[a-z].*', '\\1', X3)]
   setnames(tbl, c('rank', 'artist', 'title'))
+  setcolorder(tbl, c(1L, 3L, 2L))[]
+}
+
+get_greece = function(...) {
+  URL = 'http://www.ifpi.gr/airplay_en.html'
+  tbl = read_html(URL) %>% html_node('table') %>% 
+    html_table(header = TRUE) %>% setDT
+  setnames(tbl, c('Rank', 'Artist', 'Title'),
+           c('rank', 'artist', 'title'))
+  tbl[ , c('Company', 'Week-1', 'Status') := NULL]
   setcolorder(tbl, c(1L, 3L, 2L))[]
 }
 
