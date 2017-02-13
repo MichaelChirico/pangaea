@@ -18,7 +18,8 @@ URLs = list(Anglosphere =
                                'Poland', 'Belarus', 'Ukraine',
                                'Austria', 'Croatia', 'Greece',
                                'Czech Republic', 'Slovakia',
-                               'Hungary')),
+                               'Hungary', 'Slovenia', 'Romania',
+                               'Lithuania')),
             `East/South Asia & Islands` = 
               list(country = c('South Korea', 'Japan', 'India')),
             `Africa & Middle East` =
@@ -60,7 +61,10 @@ get_chart = function(country)
          'Greece' = get_greece,
          'Czech Republic' = get_czech_republic,
          'Slovakia' = get_slovakia,
-         'Hungary' = get_hungary)()
+         'Hungary' = get_hungary,
+         'Slovenia' = get_slovenia,
+         'Romania' = get_romania,
+         'Lithuania' = get_lithuania)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -409,6 +413,30 @@ get_hungary = function(...) {
   title = track_column %>% html_nodes(xpath = title.xp) %>% 
     html_text %>% trim_white
   title = title[nzchar(title)]
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_slovenia = function(...) {
+#   URL = 'http://www.slotop50.si/Lestvice/Tedenske-lestvice'
+#   pg = read_html(URL)
+#   artist = pg %>% html_nodes(xpath = '//div[@class="lw-artist"]') %>% html_text
+# }
+
+# #page appears dynamic? perhaps need RSelenium-type approach
+# get_romania = function(...) {
+#   URL = 'http://www.mediaforest.ro/WeeklyCharts/HistoryWeeklyCharts.aspx'
+#   tbl = read_html(URL) %>% 
+#     html_node(xpath = '//tbody[@id="tb_WeeklyChartRadioLocal"]')
+# }
+
+get_lithuania = function(...) {
+  URL = 'http://rc.lt/top15/'
+  track_column = read_html(URL) %>% 
+    html_nodes(xpath = '//div[@class="post_title"]') %>%
+    html_text %>% trim_white
+  title = gsub('.*–\\s+', '', track_column)
+  artist = gsub('\\s+–.*', '', track_column)
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
