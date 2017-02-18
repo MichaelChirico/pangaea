@@ -5,27 +5,27 @@ library(data.table)
 
 trim_white = function(x) gsub("^\\s+|\\s+$", "", x)
 
-URLs = list(Anglosphere = 
-              list(country = c('USA', 'Canada', 'UK',
-                               'Ireland', 'Australia',
-                               'New Zealand')),
-            Europe = 
-              list(country = c('Portugal', 'Spain', 'Belgium',
-                               'France', 'Netherlands',
-                               'Germany', 'Switzerland',
-                               'Italy', 'Denmark', 'Norway',
-                               'Sweden', 'Finland', 'Russia',
-                               'Poland', 'Belarus', 'Ukraine',
-                               'Austria', 'Croatia', 'Greece',
-                               'Czech Republic', 'Slovakia',
-                               'Hungary', 'Slovenia', 'Romania',
-                               'Lithuania')),
-            `East/South Asia & Islands` = 
-              list(country = c('South Korea', 'Japan', 'India')),
-            `Africa & Middle East` =
-              list(country = 'Nigeria'),
-            `Caribbean & Latin America` =
-              list(country = 'Mexico'))
+charts = list(Anglosphere = 
+                list(country = c('USA', 'Canada', 'UK',
+                                 'Ireland', 'Australia',
+                                 'New Zealand')),
+              Europe = 
+                list(country = c('Portugal', 'Spain', 'Belgium',
+                                 'France', 'Netherlands',
+                                 'Germany', 'Switzerland',
+                                 'Italy', 'Denmark', 'Norway',
+                                 'Sweden', 'Finland', 'Russia',
+                                 'Poland', 'Belarus', 'Ukraine',
+                                 'Austria', 'Croatia', 'Greece',
+                                 'Czech Republic', 'Slovakia',
+                                 'Hungary', 'Slovenia', 'Romania',
+                                 'Lithuania', 'Bulgaria')),
+              `East/South Asia & Islands` = 
+                list(country = c('South Korea', 'Japan', 'India')),
+              `Africa & Middle East` =
+                list(country = 'Nigeria'),
+              `Caribbean & Latin America` =
+                list(country = 'Mexico'))
 
 get_chart = function(country)
   switch(country,
@@ -64,7 +64,8 @@ get_chart = function(country)
          'Hungary' = get_hungary,
          'Slovenia' = get_slovenia,
          'Romania' = get_romania,
-         'Lithuania' = get_lithuania)()
+         'Lithuania' = get_lithuania,
+         'Bulgaria' = get_bulgaria)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -155,17 +156,19 @@ get_mexico = function(...) {
 get_portugal = function(...) {
   URL = 'http://euro200.net/Portugal-Top50.htm'
   #ragged table
-  top_50 = read_html(URL) %>% 
-    html_nodes('table') %>% html_table(fill = TRUE) %>% `[[`(1L)
+  tbl = read_html(URL) %>% 
+    html_node('table') %>% html_table(fill = TRUE) %>% setDT
   #exclude irrelevant header/footer rows
-  top_50 = setDT(top_50)[-c(1L:grep('this week', X2),
-                            (grep('25', X2) + 1L):.N)]
-  top_50 = rbind(top_50[ , .(title_artist = X5)],
-                 top_50[ , .(title_artist = X11)])
-  top_50[ , c("artist", "title") := tstrsplit(title_artist, split = "\\s-\\s")]
-  top_50[ , artist := trim_white(gsub("\n", "", artist))]
-  top_50[ , artist := gsub("(.*),\\s(THE)", "\\2 \\1", artist)][]
-  top_50[ , title := trim_white(gsub("\n", "", title))][]
+  tbl = tbl[-c(1L:grep('this week', X2), (grep('25', X2) + 1L):.N)]
+  #all relevant info in these two columns
+  tbl = rbind(tbl[ , .(title_artist = X5)],
+              tbl[ , .(title_artist = X11)])
+  tbl[ , c("artist", "title") := tstrsplit(title_artist, split = "\\s-\\s")]
+  tbl[ , artist := trim_white(gsub("\n", "", artist))]
+  tbl[ , artist := gsub("(.*),\\s(THE)", "\\2 \\1", artist)]
+  tbl[ , title := trim_white(gsub("\n", "", title))]
+  tbl[ , title_artist := NULL]
+  tbl[ , rank := .I][]
 }
 
 get_spain = function(...) {
@@ -438,6 +441,22 @@ get_lithuania = function(...) {
   title = gsub('.*–\\s+', '', track_column)
   artist = gsub('\\s+–.*', '', track_column)
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_bulgaria = function(...) {
+  #very similar to Portugal (see there for comments)
+  URL = 'http://euro200.net/Bulgarije-top-40.htm'
+  tbl = read_html(URL) %>% 
+    html_node('table') %>% html_table(fill = TRUE) %>% setDT
+  tbl = tbl[-c(1L:grep('this week', X2), (grep('^20$', X2) + 1L):.N)]
+  tbl = rbind(tbl[ , .(title_artist = X5)],
+              tbl[ , .(title_artist = X11)])
+  tbl[ , c("artist", "title") := tstrsplit(title_artist, split = "\\s-\\s")]
+  tbl[ , artist := trim_white(gsub("\n", "", artist))]
+  tbl[ , artist := gsub("(.*),\\s(THE)", "\\2 \\1", artist)]
+  tbl[ , title := trim_white(gsub("\n", "", title))]
+  tbl[ , title_artist := NULL]
+  tbl[ , rank := .I][]
 }
 
 # Anglosphere ####
