@@ -23,7 +23,7 @@ charts = list(Anglosphere =
               `East/South Asia & Islands` = 
                 list(country = c('South Korea', 'Japan', 'India',
                                  'Vietnam', 'Philippines',
-                                 'Malaysia', 'Singapore')),
+                                 'Malaysia', 'Singapore', 'Thailand')),
               `Africa & Middle East` =
                 list(country = 'Nigeria'),
               `Caribbean & Latin America` =
@@ -71,7 +71,8 @@ get_chart = function(country)
          'Vietnam' = get_vietnam,
          'Philippines' = get_philippines,
          'Malaysia' = get_malaysia,
-         'Singapore' = get_singapore)()
+         'Singapore' = get_singapore,
+         'Thailand' = get_thailand)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -169,6 +170,18 @@ get_malaysia = function(...) {
 get_singapore = function(...) {
   #all of musicweekly.asia charts identical, see Vietnam
   URL = 'http://musicweekly.asia/charts/top-30-singles-singapore' 
+  pg = read_html(URL)
+  title = pg %>% html_nodes(xpath = '//table//tr/td[3]/strong') %>% html_text
+  artist.xp = '//table//tr/td[3]/node()[not(self::strong)]'
+  artist = pg %>% html_nodes(xpath = artist.xp) %>% html_text
+  artist = artist[nzchar(artist)]
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_thailand = function(...) {
+  #all of musicweekly.asia charts identical, see Vietnam
+  #  **TO DO: investigate http://deungdutjai.com/top-charts/
+  URL = 'http://musicweekly.asia/charts/top-30-singles-thailand' 
   pg = read_html(URL)
   title = pg %>% html_nodes(xpath = '//table//tr/td[3]/strong') %>% html_text
   artist.xp = '//table//tr/td[3]/node()[not(self::strong)]'
