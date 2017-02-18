@@ -22,7 +22,7 @@ charts = list(Anglosphere =
                                  'Lithuania', 'Bulgaria')),
               `East/South Asia & Islands` = 
                 list(country = c('South Korea', 'Japan', 'India',
-                                 'Vietnam')),
+                                 'Vietnam', 'Philippines')),
               `Africa & Middle East` =
                 list(country = 'Nigeria'),
               `Caribbean & Latin America` =
@@ -67,7 +67,8 @@ get_chart = function(country)
          'Romania' = get_romania,
          'Lithuania' = get_lithuania,
          'Bulgaria' = get_bulgaria,
-         'Vietnam' = get_vietnam)()
+         'Vietnam' = get_vietnam,
+         'Philippines' = get_philippines)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -136,6 +137,17 @@ get_vietnam = function(...) {
   artist.xp = '//table//tr/td[3]/node()[not(self::strong)]'
   artist = pg %>% html_nodes(xpath = artist.xp) %>% html_text
   #not sure where the blanks are coming from?
+  artist = artist[nzchar(artist)]
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_philippines = function(...) {
+  #all of musicweekly.asia charts identical, see Vietnam
+  URL = 'http://musicweekly.asia/charts/top-30-singles-philippines' 
+  pg = read_html(URL)
+  title = pg %>% html_nodes(xpath = '//table//tr/td[3]/strong') %>% html_text
+  artist.xp = '//table//tr/td[3]/node()[not(self::strong)]'
+  artist = pg %>% html_nodes(xpath = artist.xp) %>% html_text
   artist = artist[nzchar(artist)]
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
