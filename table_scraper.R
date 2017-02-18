@@ -21,7 +21,8 @@ charts = list(Anglosphere =
                                  'Hungary', 'Slovenia', 'Romania',
                                  'Lithuania', 'Bulgaria')),
               `East/South Asia & Islands` = 
-                list(country = c('South Korea', 'Japan', 'India')),
+                list(country = c('South Korea', 'Japan', 'India',
+                                 'Vietnam')),
               `Africa & Middle East` =
                 list(country = 'Nigeria'),
               `Caribbean & Latin America` =
@@ -65,7 +66,8 @@ get_chart = function(country)
          'Slovenia' = get_slovenia,
          'Romania' = get_romania,
          'Lithuania' = get_lithuania,
-         'Bulgaria' = get_bulgaria)()
+         'Bulgaria' = get_bulgaria,
+         'Vietnam' = get_vietnam)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -124,7 +126,18 @@ get_india = function(...) {
     #First line appears to be the movie title?
     # then second line starts with white space
     strsplit(split = "\n") %>% sapply(., `[`, 2L) %>% gsub("^\\s+", "", .)
-  data.table(rank = seq_len(length(title)), title, artist)
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_vietnam = function(...) {
+  URL = 'http://musicweekly.asia/charts/top-30-singles-vietnam'
+  pg = read_html(URL)
+  title = pg %>% html_nodes(xpath = '//table//tr/td[3]/strong') %>% html_text
+  artist.xp = '//table//tr/td[3]/node()[not(self::strong)]'
+  artist = pg %>% html_nodes(xpath = artist.xp) %>% html_text
+  #not sure where the blanks are coming from?
+  artist = artist[nzchar(artist)]
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
 # Africa & Middle East ####
