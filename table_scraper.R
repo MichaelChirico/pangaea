@@ -24,7 +24,8 @@ charts = list(Anglosphere =
                 list(country = c('South Korea', 'Japan', 'India',
                                  'Vietnam', 'Philippines',
                                  'Malaysia', 'Singapore', 'Thailand',
-                                 'Cambodia', 'Hong Kong')),
+                                 'Cambodia', 'Hong Kong',
+                                 'Indonesia')),
               `Africa & Middle East` =
                 list(country = 'Nigeria'),
               `Caribbean & Latin America` =
@@ -75,7 +76,8 @@ get_chart = function(country)
          'Singapore' = get_singapore,
          'Thailand' = get_thailand,
          'Cambodia' = get_cambodia,
-         'Hong Kong' = get_hong_kong)()
+         'Hong Kong' = get_hong_kong,
+         'Indonesia' = get_indonesia)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -213,6 +215,22 @@ get_hong_kong = function(...) {
   artist = pg %>% html_nodes(xpath = artist.xp) %>% html_text
   artist = artist[nzchar(artist)]
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_indonesia = function(...) {
+  idx_url = paste0('http://creativedisc.com/category/',
+                   'top-charts/creative-disc-top-50-chart/')
+  URL = read_html(idx_url) %>% 
+    html_node(xpath = '//article[@class="latestPost excerpt  "]/a') %>% 
+    html_attr('href')
+  body.xp = '//div[@itemprop="articleBody"]/p[2]'
+  tbl = read_html(URL) %>% html_node(xpath = body.xp) %>% 
+    #page display is horrible, but thankfully the blanks are tabs!
+    html_text %>% read.table(text = ., sep = '\t', header = TRUE) %>%
+    setDT
+  tbl[ , title := gsub('\\s+\\[.*', '', Song.Title..Album.Title...Label.)]
+  setnames(tbl, 'Artist', 'artist')
+  tbl[ , .(rank, title, artist)]
 }
 
 # Africa & Middle East ####
