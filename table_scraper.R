@@ -274,6 +274,20 @@ get_lebanon = function(...) {
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
+get_ghana = function(...) {
+  URL = 'http://www.yfmghana.com/y-top-20/'
+  song.xp = '//div[@class="ox-eef4d49dcb-gmail_default"]/ol/li'
+  songs = read_html(URL) %>% 
+    html_nodes(xpath = song.xp) %>% html_text
+  tbl = setDT(transpose(strsplit(songs, '\\s+–\\s+')))
+  setnames(tbl, c('artist', 'title'))
+  tbl[ , rank := .I]
+  setcolorder(tbl, 3:1)
+  #reference case: 17. JOEL TWERKI
+  #  (unsure song title, just assign as artist)
+  tbl[is.na(title), title := artist][]
+}
+
 # Caribbean & Latin America ####
 get_mexico = function(...) {
   URL = 'http://www.billboard.com/charts/regional-mexican-songs'
