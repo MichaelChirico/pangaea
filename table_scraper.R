@@ -25,9 +25,9 @@ charts = list(Anglosphere =
                                  'Vietnam', 'Philippines',
                                  'Malaysia', 'Singapore', 'Thailand',
                                  'Cambodia', 'Hong Kong',
-                                 'Indonesia')),
+                                 'Indonesia', 'China')),
               `Africa & Middle East` =
-                list(country = 'Nigeria'),
+                list(country = c('Nigeria', 'Israel', 'Lebanon')),
               `Caribbean & Latin America` =
                 list(country = 'Mexico'))
 
@@ -77,7 +77,10 @@ get_chart = function(country)
          'Thailand' = get_thailand,
          'Cambodia' = get_cambodia,
          'Hong Kong' = get_hong_kong,
-         'Indonesia' = get_indonesia)()
+         'Indonesia' = get_indonesia,
+         'China' = get_china,
+         'Israel' = get_israel,
+         'Lebanon' = get_lebanon)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -233,6 +236,13 @@ get_indonesia = function(...) {
   tbl[ , .(rank, title, artist)]
 }
 
+# China = dynamic
+# get_china = function(...) {
+#   URL = 'https://y.qq.com/portal/toplist/4.html'
+#   pg = read_html(URL)
+#   pg %>% html_nodes(xpath = '/html/body/div[2]/div[2]/div[3]/ul[2]/li[1]/div/div[4]/span/a[2]')
+# }
+
 # Africa & Middle East ####
 get_nigeria = function(...) {
   URL = 'http://africacharts.com/official-top-50-songs-nigeria/'
@@ -244,6 +254,24 @@ get_nigeria = function(...) {
   if (length(artist) != length(title))
     message("Mismatched title/artist pull")
   data.table(rank = seq_len(length(title)), title, artist)
+}
+
+# dynamic
+# get_israel = function(...) {
+#   URL = 'http://mediaforest.biz/WeeklyCharts/'
+#   pg = read_html(URL)
+#   pg %>% html_node(xpath = '//*[@id="local_tab1"]/div/table/tbody/tr[2]/td[5]')
+# }
+
+get_lebanon = function(...) {
+  URL = 'http://www.olt20.com/Charts'
+  pg = read_html(URL)
+  title = pg %>% 
+    html_nodes(xpath = '//span[@class="song-title"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//span[@class="artist"]') %>% 
+    html_text %>% trim_white
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
 # Caribbean & Latin America ####
