@@ -28,7 +28,7 @@ charts = list(Anglosphere =
                                  'Indonesia', 'China')),
               `Africa & Middle East` =
                 list(country = c('Nigeria', 'Israel', 'Lebanon',
-                                 'Kenya')),
+                                 'Kenya', 'Uganda')),
               `Caribbean & Latin America` =
                 list(country = 'Mexico'))
 
@@ -82,7 +82,8 @@ get_chart = function(country)
          'China' = get_china,
          'Israel' = get_israel,
          'Lebanon' = get_lebanon,
-         'Kenya' = get_kenya)()
+         'Kenya' = get_kenya,
+         'Uganda' = get_uganda)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -296,6 +297,25 @@ get_kenya = function(...) {
   title = pg %>% html_nodes(xpath = '//h2[@class="title"]') %>% html_text
   artist = pg %>% html_nodes(xpath = '//h3[@class="artist"]') %>% html_text
   setDT(data.frame(title, artist), keep.rownames = "rank")[]
+}
+
+get_uganda = function(...) {
+  URL_stub = 'http://www.ugmusic.net/'
+  mainURL = paste0(URL_stub, 'charts.php')
+  trackURLs = read_html(mainURL) %>%
+    #all four tables on page identical;
+    #  doing full xpath with html_node was
+    #  including other tables (despite [1] force attempt)
+    html_node(xpath = '//table//table[1]') %>%
+    html_nodes(xpath = './/td/a[contains(@href, "song")]') %>%
+    html_attr('href') %>% paste0(URL_stub, .)
+  tbl = setDT(transpose(lapply(trackURLS, function(uu) {
+    title_artist = read_html(uu) %>% html_node('h2') %>% 
+      html_text %>% strsplit('- ') %>% el
+  })))
+  setnames(tbl, c('title', 'artist'))
+  tbl[ , rank := .I]
+  setcolorder(tbl, c(3, 1, 2))[]
 }
 
 # Caribbean & Latin America ####
