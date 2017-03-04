@@ -28,7 +28,7 @@ charts = list(Anglosphere =
                                  'Indonesia', 'China')),
               `Africa & Middle East` =
                 list(country = c('Nigeria', 'Israel', 'Lebanon',
-                                 'Kenya', 'Uganda')),
+                                 'Kenya', 'Uganda', 'Malawi')),
               `Caribbean & Latin America` =
                 list(country = 'Mexico'))
 
@@ -83,7 +83,8 @@ get_chart = function(country)
          'Israel' = get_israel,
          'Lebanon' = get_lebanon,
          'Kenya' = get_kenya,
-         'Uganda' = get_uganda)()
+         'Uganda' = get_uganda,
+         'Malawi' = get_malawi)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -316,6 +317,20 @@ get_uganda = function(...) {
   setnames(tbl, c('title', 'artist'))
   tbl[ , rank := .I]
   setcolorder(tbl, c(3, 1, 2))[]
+}
+
+get_malawi = function(...) {
+  URL = 'http://www.malawi-music.com/music-charts'
+  top_list = read_html(URL) %>% 
+    html_nodes(xpath = '//div/span[@class="item_name"]') %>% html_text
+  #replace FIRST hyphen with tripled hyphen to
+  #  distinguish from subsequent hyphens
+  top_list = sub('-', '---', top_list)
+  tbl = setDT(tstrsplit(top_list, '(?<=[0-9])\\.\\s+|\\s+---\\s+', 
+                        perl = TRUE))
+  setnames(tbl, c('rank', 'artist', 'title'))
+  tbl[ , rank := as.integer(rank)]
+  setcolorder(tbl, c(1, 3, 2))[]
 }
 
 # Caribbean & Latin America ####
