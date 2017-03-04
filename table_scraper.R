@@ -27,7 +27,8 @@ charts = list(Anglosphere =
                                  'Cambodia', 'Hong Kong',
                                  'Indonesia', 'China')),
               `Africa & Middle East` =
-                list(country = c('Nigeria', 'Israel', 'Lebanon')),
+                list(country = c('Nigeria', 'Israel', 'Lebanon',
+                                 'Kenya')),
               `Caribbean & Latin America` =
                 list(country = 'Mexico'))
 
@@ -80,7 +81,8 @@ get_chart = function(country)
          'Indonesia' = get_indonesia,
          'China' = get_china,
          'Israel' = get_israel,
-         'Lebanon' = get_lebanon)()
+         'Lebanon' = get_lebanon,
+         'Kenya' = get_kenya)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -286,6 +288,14 @@ get_ghana = function(...) {
   #reference case: 17. JOEL TWERKI
   #  (unsure song title, just assign as artist)
   tbl[is.na(title), title := artist][]
+}
+
+get_kenya = function(...) {
+  URL = 'http://www.kenyatop40.com/'
+  pg = read_html(URL)
+  title = pg %>% html_nodes(xpath = '//h2[@class="title"]') %>% html_text
+  artist = pg %>% html_nodes(xpath = '//h3[@class="artist"]') %>% html_text
+  setDT(data.frame(title, artist), keep.rownames = "rank")[]
 }
 
 # Caribbean & Latin America ####
