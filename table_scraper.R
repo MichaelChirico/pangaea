@@ -32,7 +32,8 @@ charts = list(Anglosphere =
               `Caribbean & Latin America` =
                 list(country = c('Mexico', 'Brazil', 'Colombia',
                                  'Venezuela', 'Guatemala', 'Ecuador',
-                                 'Chile', 'Panama', 'Paraguay')))
+                                 'Chile', 'Panama', 'Paraguay',
+                                 'Bolivia')))
 
 get_chart = function(country)
   switch(country,
@@ -94,7 +95,8 @@ get_chart = function(country)
          'Ecuador' = get_ecuador,
          'Chile' = get_chile,
          'Panama' = get_panama,
-         'Paraguay' = get_paraguay)()
+         'Paraguay' = get_paraguay,
+         'Bolivia' = get_bolivia)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -436,6 +438,23 @@ get_paraguay = function(...) {
     html_attr('title')
   tbl = setDT(tstrsplit(artist_track, '\\s+–\\s+'))
   setnames(tbl, c('artist', 'title'))
+  tbl[ , rank := .I]
+  setcolorder(tbl, 3:1)[]
+}
+
+get_bolivia = function(...) {
+  URL = 'http://www.estelarfm.com/'
+  #took a while to narrow down to the proper table (many on page)
+  column_xp = paste0('//table[@class="table_comun" and @width="384"]',
+                     '//table[@class="text_content_gral"]//tr/td[2]')
+  column = read_html(URL) %>% html_nodes(xpath = column_xp) %>% html_text
+  #xpath above included some irrelevant rows of the table;
+  #  all relevant rows start with the registry marker
+  column = trim_white(column[grep('^\r', column)])
+  #asterisks mark highest climber/faller in the week
+  column = gsub('\\s+[*]+', '', column)
+  tbl = setDT(tstrsplit(column, '\\s+-\\s+'))
+    setnames(tbl, c('artist', 'title'))
   tbl[ , rank := .I]
   setcolorder(tbl, 3:1)[]
 }
