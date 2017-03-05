@@ -31,7 +31,8 @@ charts = list(Anglosphere =
                                  'Kenya', 'Uganda', 'Malawi')),
               `Caribbean & Latin America` =
                 list(country = c('Mexico', 'Brazil', 'Colombia',
-                                 'Venezuela', 'Guatemala')))
+                                 'Venezuela', 'Guatemala', 'Ecuador',
+                                 'Chile', 'Panama')))
 
 get_chart = function(country)
   switch(country,
@@ -89,7 +90,10 @@ get_chart = function(country)
          'Brazil' = get_brazil,
          'Colombia' = get_colombia,
          'Venezuela' = get_venezuela,
-         'Guatemala' = get_guatemala)()
+         'Guatemala' = get_guatemala,
+         'Ecuador' = get_ecuador,
+         'Chile' = get_chile,
+         'Panama' = get_panama)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -384,6 +388,36 @@ get_venezuela = function(...) {
 
 get_guatemala = function(...) {
   URL = 'http://charts.monitorlatino.com/top20/Guatemala/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_ecuador = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/Ecuador/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_chile = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/Chile/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_panama = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/Panama/General'
   pg = read_html(URL) 
   title = pg %>% 
     html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
