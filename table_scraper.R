@@ -30,7 +30,8 @@ charts = list(Anglosphere =
                 list(country = c('Nigeria', 'Israel', 'Lebanon',
                                  'Kenya', 'Uganda', 'Malawi')),
               `Caribbean & Latin America` =
-                list(country = c('Mexico', 'Brazil', 'Colombia'))
+                list(country = c('Mexico', 'Brazil', 'Colombia',
+                                 'Venezuela'))
 
 get_chart = function(country)
   switch(country,
@@ -86,7 +87,8 @@ get_chart = function(country)
          'Uganda' = get_uganda,
          'Malawi' = get_malawi,
          'Brazil' = get_brazil,
-         'Colombia' = get_colombia)()
+         'Colombia' = get_colombia,
+         'Venezuela' = get_venezuela)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -367,6 +369,15 @@ get_colombia = function(...) {
     html_text %>% `[`(seq_len(100))
   artist = pg %>% html_nodes(xpath = '//h3[@class="chart-row__artist"]') %>% 
     html_text %>% `[`(seq_len(100))
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_venezuela = function(...) {
+  URL = 'http://www.recordreport.com.ve/publico/top100/'
+  pg = read_html(URL)
+  title = pg %>% html_nodes(xpath = '//td/i') %>% 
+    html_text %>% gsub('"', '', .)
+  artist = pg %>% html_nodes(xpath = '//td/strong') %>% html_text
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
