@@ -31,7 +31,7 @@ charts = list(Anglosphere =
                                  'Kenya', 'Uganda', 'Malawi')),
               `Caribbean & Latin America` =
                 list(country = c('Mexico', 'Brazil', 'Colombia',
-                                 'Venezuela'))
+                                 'Venezuela', 'Guatemala')))
 
 get_chart = function(country)
   switch(country,
@@ -88,7 +88,8 @@ get_chart = function(country)
          'Malawi' = get_malawi,
          'Brazil' = get_brazil,
          'Colombia' = get_colombia,
-         'Venezuela' = get_venezuela)()
+         'Venezuela' = get_venezuela,
+         'Guatemala' = get_guatemala)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -378,6 +379,16 @@ get_venezuela = function(...) {
   title = pg %>% html_nodes(xpath = '//td/i') %>% 
     html_text %>% gsub('"', '', .)
   artist = pg %>% html_nodes(xpath = '//td/strong') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_guatemala = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/Guatemala/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
