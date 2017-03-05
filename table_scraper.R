@@ -30,7 +30,7 @@ charts = list(Anglosphere =
                 list(country = c('Nigeria', 'Israel', 'Lebanon',
                                  'Kenya', 'Uganda', 'Malawi')),
               `Caribbean & Latin America` =
-                list(country = 'Mexico'))
+                list(country = c('Mexico', 'Brazil', 'Colombia'))
 
 get_chart = function(country)
   switch(country,
@@ -84,7 +84,9 @@ get_chart = function(country)
          'Lebanon' = get_lebanon,
          'Kenya' = get_kenya,
          'Uganda' = get_uganda,
-         'Malawi' = get_malawi)()
+         'Malawi' = get_malawi,
+         'Brazil' = get_brazil,
+         'Colombia' = get_colombia)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -275,7 +277,7 @@ get_lebanon = function(...) {
   artist = pg %>% 
     html_nodes(xpath = '//span[@class="artist"]') %>% 
     html_text %>% trim_white
-  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+  data.table(rank = seq_len(length(title)), title, artist)
 }
 
 get_ghana = function(...) {
@@ -297,7 +299,7 @@ get_kenya = function(...) {
   pg = read_html(URL)
   title = pg %>% html_nodes(xpath = '//h2[@class="title"]') %>% html_text
   artist = pg %>% html_nodes(xpath = '//h3[@class="artist"]') %>% html_text
-  setDT(data.frame(title, artist), keep.rownames = "rank")[]
+  data.table(rank = seq_len(length(title)), title, artist)
 }
 
 get_uganda = function(...) {
@@ -336,12 +338,35 @@ get_malawi = function(...) {
 # Caribbean & Latin America ####
 get_mexico = function(...) {
   URL = 'http://www.billboard.com/charts/regional-mexican-songs'
-  page = read_html(URL) 
+  pg = read_html(URL) 
   title = page %>%
     html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% html_text
   artist = page %>% 
     html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
   artist = trim_white(artist)
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+# seems to block connection from rvest?
+# get_brazil = function(...) {
+#   URL = 'http://www.billboard.com.br/rankings'
+#   pg = read_html(URL) 
+#   title = page %>%
+#     html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% html_text
+#   artist = page %>% 
+#     html_nodes(xpath = '//*[@class="chart-row__artist"]') %>% html_text
+#   artist = trim_white(artist)
+#   data.table(rank = seq_len(length(title)), title, artist)
+# }
+
+get_colombia = function(...) {
+  URL = 'http://www.national-report.com/top-100-colombia/'
+  pg = read_html(URL)
+  title = pg %>% html_nodes(xpath = '//h2[@class="chart-row__song"]') %>% 
+    #not sure where it's coming from, but the list is doubled
+    html_text %>% `[`(seq_len(100))
+  artist = pg %>% html_nodes(xpath = '//h3[@class="chart-row__artist"]') %>% 
+    html_text %>% `[`(seq_len(100))
   data.table(rank = seq_len(length(title)), title, artist)
 }
 
