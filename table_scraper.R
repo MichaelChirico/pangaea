@@ -32,7 +32,7 @@ charts = list(Anglosphere =
               `Caribbean & Latin America` =
                 list(country = c('Mexico', 'Brazil', 'Colombia',
                                  'Venezuela', 'Guatemala', 'Ecuador',
-                                 'Chile', 'Panama')))
+                                 'Chile', 'Panama', 'Paraguay')))
 
 get_chart = function(country)
   switch(country,
@@ -93,7 +93,8 @@ get_chart = function(country)
          'Guatemala' = get_guatemala,
          'Ecuador' = get_ecuador,
          'Chile' = get_chile,
-         'Panama' = get_panama)()
+         'Panama' = get_panama,
+         'Paraguay' = get_paraguay)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -424,6 +425,19 @@ get_panama = function(...) {
   artist = pg %>% 
     html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
   data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_paraguay = function(...) {
+  URL = 'http://www.paraguayhits.com/top-40/'
+  artist_track = read_html(URL) %>%
+    html_nodes(xpath = '//div[@class="entry"]/li/a') %>% 
+    #Actual text can be elided, but the title attribute
+    #  still appears in full
+    html_attr('title')
+  tbl = setDT(tstrsplit(artist_track, '\\s+–\\s+'))
+  setnames(tbl, c('artist', 'title'))
+  tbl[ , rank := .I]
+  setcolorder(tbl, 3:1)[]
 }
 
 # Europe ####
