@@ -33,7 +33,7 @@ charts = list(Anglosphere =
                 list(country = c('Mexico', 'Brazil', 'Colombia',
                                  'Venezuela', 'Guatemala', 'Ecuador',
                                  'Chile', 'Panama', 'Paraguay',
-                                 'Bolivia')))
+                                 'Bolivia', 'Suriname')))
 
 get_chart = function(country)
   switch(country,
@@ -96,7 +96,8 @@ get_chart = function(country)
          'Chile' = get_chile,
          'Panama' = get_panama,
          'Paraguay' = get_paraguay,
-         'Bolivia' = get_bolivia)()
+         'Bolivia' = get_bolivia,
+         'Suriname' = get_suriname)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -457,6 +458,17 @@ get_bolivia = function(...) {
     setnames(tbl, c('artist', 'title'))
   tbl[ , rank := .I]
   setcolorder(tbl, 3:1)[]
+}
+
+get_suriname = function(...) {
+  idx_url = 'http://www.radio10.sr/category/magic-10'
+  URL = read_html(idx_url) %>% 
+    html_node(xpath = '//h2[@class="entry-title"]/a') %>% html_attr('href')
+  #several tables; hopefully the first is always the top 10
+  tbl = read_html(URL) %>% html_node('table') %>% html_table(header = TRUE)
+  kp = c('rank', 'title', 'artist')
+  setnames(tbl, c('dw', 'Titel', 'Artiest / Groep'), kp)
+  tbl[ , kp]
 }
 
 # Europe ####
