@@ -33,7 +33,9 @@ charts = list(Anglosphere =
                 list(country = c('Mexico', 'Brazil', 'Colombia',
                                  'Venezuela', 'Guatemala', 'Ecuador',
                                  'Chile', 'Panama', 'Paraguay',
-                                 'Bolivia', 'Suriname')))
+                                 'Bolivia', 'Suriname', 
+                                 'Dominican Republic', 'Peru',
+                                 'Uruguay', 'Argentina')))
 
 get_chart = function(country)
   switch(country,
@@ -97,7 +99,11 @@ get_chart = function(country)
          'Panama' = get_panama,
          'Paraguay' = get_paraguay,
          'Bolivia' = get_bolivia,
-         'Suriname' = get_suriname)()
+         'Suriname' = get_suriname,
+         'Dominican Republic' = get_dominican_republic,
+         'Peru' = get_peru,
+         'Uruguay' = get_uruguay,
+         'Argentina' = get_argentina)()
 
 # East/South Asia & Islands ####
 get_south_korea = function(...) {
@@ -469,6 +475,46 @@ get_suriname = function(...) {
   kp = c('rank', 'title', 'artist')
   setnames(tbl, c('dw', 'Titel', 'Artiest / Groep'), kp)
   tbl[ , kp]
+}
+
+get_dominican_republic = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/RD/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_peru = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/Peru/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_uruguay = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/Uruguay/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
+}
+
+get_argentina = function(...) {
+  URL = 'http://charts.monitorlatino.com/top20/Argentina/General'
+  pg = read_html(URL) 
+  title = pg %>% 
+    html_nodes(xpath = '//td/label[@class="Font_Gmedia"]') %>% html_text
+  artist = pg %>% 
+    html_nodes(xpath = '//td/label[@class="iArt"]') %>% html_text
+  data.table(rank = seq_len(length(title)), title, artist)
 }
 
 # Europe ####
